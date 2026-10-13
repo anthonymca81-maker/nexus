@@ -1,0 +1,11 @@
+# Nexus Tech Store - Python dependencies
+# Install: pip install -r requirements.txt
+#
+# Also required (not pip-installable):
+#   ODBC Driver 17 or 18 for SQL Server (free, from Microsoft)
+#   https://learn.microsoft.com/en-us/sql/connect/odbc/download-odbc-driver-for-sql-server
+
+customtkinter
+pyodbc
+Pillow
+python-dotenv

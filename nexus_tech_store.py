@@ -39,6 +39,9 @@ from tkinter import filedialog, messagebox
 
 import customtkinter as ctk
 from PIL import Image  # installed automatically with customtkinter
+from dotenv import load_dotenv
+
+load_dotenv()  # loads .env from the project root into os.environ
 
 try:
     import pyodbc
@@ -531,8 +534,8 @@ class Database:
                     if quantities[pid] > product["stock"]:
                         raise _CartError(f"Not enough stock for {product['name']}.")
 
-                cur.execute("INSERT INTO orders (user_id, status) VALUES (?, N'completed')", (user_id,))
-                order_id = self._new_id(cur)
+                cur.execute("INSERT INTO orders (user_id, status) OUTPUT INSERTED.id VALUES (?, N'completed')", (user_id,))
+                order_id = cur.fetchone()[0]
                 total = 0
 
                 for pid in ids:
@@ -1270,7 +1273,11 @@ class CartWindow(ctk.CTkToplevel):
                 continue
             row = ctk.CTkFrame(self.list_frame, corner_radius=10, fg_color=(LIGHT_CARD, DARK_CARD))
             row.pack(fill="x", pady=4)
-            ctk.CTkLabel(row, text=p["icon"], font=ctk.CTkFont(size=24), width=40).pack(side="left", padx=(8, 2))
+            cart_photo = self.controller.get_image(p, box=(40, 40))
+            if cart_photo:
+                ctk.CTkLabel(row, text="", image=cart_photo, width=40).pack(side="left", padx=(8, 2))
+            else:
+                ctk.CTkLabel(row, text=p["icon"], font=ctk.CTkFont(size=24), width=40).pack(side="left", padx=(8, 2))
             text = ctk.CTkFrame(row, fg_color="transparent")
             text.pack(side="left", fill="x", expand=True, pady=6)
             ctk.CTkLabel(text, text=shorten(p["name"], 24), font=ctk.CTkFont(weight="bold"), anchor="w").pack(fill="x")
@@ -1696,10 +1703,13 @@ class AdminFrame(ctk.CTkFrame):
         for p in items:
             row = ctk.CTkFrame(self.list_area, corner_radius=10, fg_color=(LIGHT_CARD, DARK_CARD))
             row.pack(fill="x", padx=6, pady=3)
-            ctk.CTkLabel(row, text=p["icon"], font=ctk.CTkFont(size=22), width=44).pack(side="left", padx=(8, 2), pady=6)
-            ctk.CTkLabel(row, text=shorten(p["name"], 26), font=ctk.CTkFont(weight="bold"),
-                         width=215, anchor="w").pack(side="left")
-            ctk.CTkLabel(row, text=p["category"], text_color=MUTED, width=135, anchor="w").pack(side="left")
+            admin_photo = self.controller.get_image(p, box=(44, 44))
+            if admin_photo:
+                ctk.CTkLabel(row, text="", image=admin_photo, width=44).pack(side="left", padx=(8, 2), pady=6)
+            else:
+                ctk.CTkLabel(row, text=p["icon"], font=ctk.CTkFont(size=22), width=44).pack(side="left", padx=(8, 2), pady=6)
+            ctk.CTkLabel(row, text=shorten(p["name"], 40), font=ctk.CTkFont(weight="bold"),
+                         width=340, anchor="w").pack(side="left")
             ctk.CTkLabel(row, text=f"${p['price']:,.2f}", width=90, anchor="w").pack(side="left")
             low = p["stock"] <= 5
             ctk.CTkLabel(row, text=f"Stock: {p['stock']}", width=80, anchor="w",
