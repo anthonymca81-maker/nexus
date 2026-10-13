@@ -1606,7 +1606,7 @@ class AdminFrame(ctk.CTkFrame):
         self.list_title = ctk.CTkLabel(lh, text="", font=ctk.CTkFont(size=18, weight="bold"))
         self.list_title.pack(side="left")
         green_btn(lh, "+ Add New Product", self.open_form, width=160, height=34).pack(side="right")
-        self.list_area = ctk.CTkScrollableFrame(main, fg_color="transparent")
+        self.list_area = ctk.CTkScrollableFrame(main, fg_color=(LIGHT_BG, DARK_BG))
         self.list_area.pack(fill="both", expand=True, padx=8, pady=(0, 6))
 
     # ---------------- events ----------------
@@ -1709,8 +1709,9 @@ class AdminFrame(ctk.CTkFrame):
             else:
                 ctk.CTkLabel(row, text=p["icon"], font=ctk.CTkFont(size=22), width=44).pack(side="left", padx=(8, 2), pady=6)
             ctk.CTkLabel(row, text=shorten(p["name"], 40), font=ctk.CTkFont(weight="bold"),
-                         width=340, anchor="w").pack(side="left")
-            ctk.CTkLabel(row, text=f"${p['price']:,.2f}", width=90, anchor="w").pack(side="left")
+                         width=340, anchor="w", text_color=("gray10", "gray90")).pack(side="left")
+            ctk.CTkLabel(row, text=f"${p['price']:,.2f}", width=90, anchor="w",
+                         text_color=("gray10", "gray90")).pack(side="left")
             low = p["stock"] <= 5
             ctk.CTkLabel(row, text=f"Stock: {p['stock']}", width=80, anchor="w",
                          text_color=("#c13f3f", "#ff7777") if low else MUTED).pack(side="left")
