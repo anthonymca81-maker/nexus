@@ -612,6 +612,17 @@ def danger_btn(parent, text, command, **kw):
     )
 
 
+def reset_scroll(scrollable):
+    """Scroll a CTkScrollableFrame back to the top after its content was rebuilt."""
+    try:
+        scrollable.update_idletasks()
+        canvas = scrollable._parent_canvas
+        canvas.configure(scrollregion=canvas.bbox("all"))
+        canvas.yview_moveto(0)
+    except Exception:
+        pass
+
+
 def shorten(text, n):
     return text if len(text) <= n else text[: n - 1] + "…"
 
@@ -1170,6 +1181,7 @@ class StoreFrame(ctk.CTkFrame):
     def refresh_products(self):
         for w in self.product_area.winfo_children():
             w.destroy()
+        reset_scroll(self.product_area)
         q = self.search_entry.get().strip().lower()
         items = [
             p for p in self.controller.products
@@ -1696,11 +1708,20 @@ class AdminFrame(ctk.CTkFrame):
         cat = self.selected_category
         for w in self.list_area.winfo_children():
             w.destroy()
+        reset_scroll(self.list_area)   # stale scroll position hides the rows on some machines
         items = [p for p in c.products if cat == "All" or p["category"] == cat]
         self.list_title.configure(
             text=f"{'All Products' if cat == 'All' else cat}  ({len(items)})")
 
         for p in items:
+            try:
+                self._draw_row(p)
+            except Exception as err:   # one bad product must not blank the whole list
+                print(f"[admin list] could not draw product {p.get('id')} {p.get('name')!r}: {err!r}")
+        self.after(50, lambda: reset_scroll(self.list_area))
+
+    def _draw_row(self, p):
+        if True:
             row = ctk.CTkFrame(self.list_area, corner_radius=10, fg_color=(LIGHT_CARD, DARK_CARD))
             row.pack(fill="x", padx=6, pady=3)
             admin_photo = self.controller.get_image(p, box=(44, 44))
